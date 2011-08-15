@@ -1,0 +1,22 @@
+mvStore setup
+
+This directory will contain the various setup options for each
+platform.  Until the project becomes open, a few preliminary
+steps will be required:
+
+ * the user must have a personal (free) github account
+   and must be registered as one of the 10 collaborators
+ * in his github account, the user must have a ssh keypair 
+   duly registered, and properly setup on the machine
+   where he wishes to run the setup 
+ * the user must have already installed git, and cloned 
+   the setup project:
+
+     git clone git@github.com:mvStore/setup.git
+     . ./setup/linux/setup.sh
+
+Most of these manual steps will become unnecessary when we
+open-source: the setup script will be obtained with curl
+via https://raw.github.com (no credential required), 
+and it will make sure git is installed.
+
