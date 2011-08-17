@@ -5,6 +5,14 @@
 #
 echo "Welcome to mvStore!"
 echo ""
+echo "Prior to running this setup, please make sure to:"
+echo ""
+echo "   - have a personal github account"
+echo "   - be registered as contributor for mvStore (email maxw@vmware.com)"
+echo "   - git config --global user.email '...'"
+echo "   - git config --global user.name '...'" 
+echo "   - be a sudoer"
+echo ""  
 echo "This setup script will perform the following steps:"
 echo ""
 echo "   1. create a mvStore directory that will contain the installed components"
@@ -33,8 +41,9 @@ sleep 1
 #
 # Check dependencies and install missing elements.
 #
-dependencies_exe=(cmake curl git hg node)
-dependencies_pkg=(cmake curl git-core mercurial libssl-dev)
+dependencies_exe=(cmake curl git hg node gcc)
+dependencies_pkg_apt=(cmake curl git-core mercurial libssl-dev)
+dependencies_pkg_yum=(cmake curl git-core mercurial openssl-devel gcc-c++) 
 echo -e "\n2. Checking dependencies: ${dependencies_exe[@]}\n"
 sleep 1
 dependencies_doinstall=0
@@ -50,11 +59,19 @@ if [ $dependencies_doinstall -eq 1 ]; then
     echo "   cancelling setup upon user's request"
     exit 1
   fi
-
+  
   # Standard install for the basic components.
   # Note: Already installed components should remain unchanged.
-  sudo apt-get update
-  sudo apt-get install ${dependencies_pkg[@]}
+  if ! grep '/usr/' <(whereis apt-get) >/dev/null; then
+    # With YUM...
+    # TODO: Make sure this is fedora; match the epel version with fedora version.
+    sudo rpm -Uvh http://download.fedora.redhat.com/pub/epel/5/i386/epel-release-5-4.noarch.rpm
+    sudo yum install ${dependencies_pkg_yum[@]} 
+  else
+    # With aptitude...
+    sudo apt-get update
+    sudo apt-get install ${dependencies_pkg_apt[@]}
+  fi
 
   # Control the node.js version we install.
   preferred_nodejs_version=0.4.7
