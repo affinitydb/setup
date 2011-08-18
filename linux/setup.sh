@@ -9,8 +9,7 @@ echo "Prior to running this setup, please make sure to:"
 echo ""
 echo "   - have a personal github account"
 echo "   - be registered as contributor for mvStore (email maxw@vmware.com)"
-echo "   - git config --global user.email '...'"
-echo "   - git config --global user.name '...'" 
+echo "   - have a ssh keypair properly configured"
 echo "   - be a sudoer"
 echo ""  
 echo "This setup script will perform the following steps:"
@@ -90,10 +89,29 @@ else
 fi
 
 #
+# Configure git.
+#
+if ! grep 'user.email' <(git config --global -l) >/dev/null; then
+  echo ""
+  read -p "   configuring git user.email: "
+  if [ -z "$REPLY" ]; then
+    echo -e "      skipped"
+  else
+    git config --global user.email "$REPLY"
+    read -p "   configuring git user.name: "
+    if [ -z "$REPLY" ]; then
+      echo -e "      skipped"
+    else
+      git config --global user.name "$REPLY"
+    fi
+  fi
+fi
+
+#
 # Fetch protobuf from google, build it and set it up.
 #
 echo -e "\n3. Fetching protobuf-2.3.0\n"
-sleep 1
+sleep 3 
 if [ -d "protobuf" ]; then
   echo -e "   directory 'protobuf' already present in\n   $PWD"
   sleep 1
@@ -113,7 +131,7 @@ fi
 # Fetch protobuf-for-node (using mercurial), build it and set it up.
 #
 echo -e "\n4. Fetching protobuf-for-node\n"
-sleep 1
+sleep 3 
 if [ -d "protobuf-for-node" ]; then
   echo -e "   directory 'protobuf-for-node' already present in \n   $PWD"
   sleep 1
@@ -128,18 +146,21 @@ fi
 #
 # Setup ssh-agent, to avoid multiple logins when fetching all the git projects.
 #
+echo -e "   configuring ssh-agent to facilitate git logins"
 if ! grep '/usr/bin' <(ps aux | grep 'ssh-agent') >/dev/null; then
-  echo -e "   starting ssh-agent"
+  echo -e "   - starting ssh-agent"
   /usr/bin/ssh-agent
+else
+  echo -e "   - ssh-agent is already running"
 fi
 pushd ~/.ssh
 ssh_keys=`find -regex .*id_.* | grep -v .pub`
 for iK in ${ssh_keys[@]}; do
   ssh_pub=`head -c 50 $iK.pub`
   if ! grep "$ssh_pub" <(ssh-add -L) >/dev/null; then 
-    read -p "   ssh-add $iK? [Y/n]"
+    read -p "   - ssh-add $iK? [Y/n]"
     if [[ $REPLY =~ ^[Nn]$ ]]; then
-      echo "      skipped $iK"
+      echo "     user skipped ssh-add $iK"
     else
       ssh-add $iK
     fi
@@ -152,7 +173,7 @@ popd
 #
 mvstore_projects=(kernel server nodejs doc cloudfoundry tests_kernel)
 echo -e "\n5. Cloning the mvStore projects:\n   ${mvstore_projects[@]}\n"
-sleep 1
+sleep 3
 for iP in ${mvstore_projects[@]}; do
   if [ -d "$iP" ]; then
     echo "   project $iP already cloned"
@@ -165,7 +186,7 @@ done
 # Build mvStore kernel.
 #
 echo -e "\n   Building mvStore kernel...\n"
-sleep 1
+sleep 3 
 mkdir kernel/build
 pushd kernel/build 
 cmake ..
@@ -176,7 +197,7 @@ popd
 # Build mvStore server.
 #
 echo -e "\n   Building mvStore server...\n"
-sleep 1
+sleep 3
 mkdir server/build
 pushd server/build
 cmake ..
@@ -186,3 +207,4 @@ popd
 # TODO: setup nodejs (mvstore.desc etc.)
 # TODO: ask if user wants to run tests
 # TODO: ask if user wants to start mvserver
+
