@@ -105,6 +105,7 @@ else
   pushd protobuf
   ./configure
   make
+  sudo make install
   popd
 fi
 
