@@ -17,10 +17,11 @@ echo ""
 echo "   1. create a mvStore directory that will contain the installed components"
 echo "   2. check external dependencies such as cmake, curl, node.js etc."
 echo "      (install them if not present)"
-echo "   3. fetch protobuf-2.3.0 from google and build it"
-echo "   4. fetch protobuf-for-node and build it"
-echo "   5. clone the mvStore projects from github and build them"
-echo "   6. (optional) start the mvStore server"
+echo "   3. clone the mvStore projects from github"
+echo "   4. fetch protobuf-2.3.0 from google and build it"
+echo "   5. fetch protobuf-for-node and build it"
+echo "   6. build mvStore"
+echo "   7. (optional) start the mvStore server"
 echo ""
 read -p "Ready to start? [Y/n]"
 if [[ $REPLY =~ ^[Nn]$ ]]; then
@@ -108,42 +109,6 @@ if ! grep 'user.email' <(git config --global -l) >/dev/null; then
 fi
 
 #
-# Fetch protobuf from google, build it and set it up.
-#
-echo -e "\n3. Fetching protobuf-2.3.0\n"
-sleep 3 
-if [ -d "protobuf" ]; then
-  echo -e "   directory 'protobuf' already present in\n   $PWD"
-  sleep 1
-else
-  curl -o protobuf-2.3.0.tar.gz http://protobuf.googlecode.com/files/protobuf-2.3.0.tar.gz
-  tar -xvpzf protobuf-2.3.0.tar.gz
-  rm protobuf-2.3.0.tar.gz
-  mv protobuf-2.3.0 protobuf
-  pushd protobuf
-  ./configure
-  make
-  sudo make install
-  popd
-fi
-
-#
-# Fetch protobuf-for-node (using mercurial), build it and set it up.
-#
-echo -e "\n4. Fetching protobuf-for-node\n"
-sleep 3 
-if [ -d "protobuf-for-node" ]; then
-  echo -e "   directory 'protobuf-for-node' already present in \n   $PWD"
-  sleep 1
-else
-  hg clone https://code.google.com/p/protobuf-for-node/
-  pushd protobuf-for-node
-  python ../../setup/tools/adjust_protobuf_for_node_wscript.py wscript
-  NODE_PATH=/usr/local/bin/node PREFIX_NODE=/usr/local PROTOBUF=../protobuf node-waf configure clean build
-  popd
-fi
-
-#
 # Setup ssh-agent, to avoid multiple logins when fetching all the git projects.
 #
 echo -e "   configuring ssh-agent to facilitate git logins"
@@ -171,8 +136,8 @@ popd
 #
 # Clone all the github projects.
 #
-mvstore_projects=(kernel server nodejs doc cloudfoundry tests_kernel)
-echo -e "\n5. Cloning the mvStore projects:\n   ${mvstore_projects[@]}\n"
+mvstore_projects=(kernel server nodejs doc cloudfoundry tests_kernel setup)
+echo -e "\n3. Cloning the mvStore projects:\n   ${mvstore_projects[@]}\n"
 sleep 3
 for iP in ${mvstore_projects[@]}; do
   if [ -d "$iP" ]; then
@@ -183,9 +148,46 @@ for iP in ${mvstore_projects[@]}; do
 done
 
 #
+# Fetch protobuf from google, build it and set it up.
+#
+echo -e "\n4. Fetching protobuf-2.3.0\n"
+sleep 3 
+if [ -d "protobuf" ]; then
+  echo -e "   directory 'protobuf' already present in\n   $PWD"
+  sleep 1
+else
+  curl -o protobuf-2.3.0.tar.gz http://protobuf.googlecode.com/files/protobuf-2.3.0.tar.gz
+  tar -xvpzf protobuf-2.3.0.tar.gz
+  rm protobuf-2.3.0.tar.gz
+  mv protobuf-2.3.0 protobuf
+  pushd protobuf
+  ./configure
+  make
+  echo -e "   installing protobuf..."
+  sudo make install
+  popd
+fi
+
+#
+# Fetch protobuf-for-node (using mercurial), build it and set it up.
+#
+echo -e "\n5. Fetching protobuf-for-node\n"
+sleep 3 
+if [ -d "protobuf-for-node" ]; then
+  echo -e "   directory 'protobuf-for-node' already present in \n   $PWD"
+  sleep 1
+else
+  hg clone https://code.google.com/p/protobuf-for-node/
+  pushd protobuf-for-node
+  python ../setup/tools/adjust_protobuf_for_node_wscript.py wscript
+  NODE_PATH=/usr/local/bin/node PREFIX_NODE=/usr/local PROTOBUF=../protobuf node-waf configure clean build
+  popd
+fi
+
+#
 # Build mvStore kernel.
 #
-echo -e "\n   Building mvStore kernel...\n"
+echo -e "\n6. Building mvStore...\n"
 sleep 3 
 mkdir kernel/build
 pushd kernel/build 
@@ -196,8 +198,6 @@ popd
 #
 # Build mvStore server.
 #
-echo -e "\n   Building mvStore server...\n"
-sleep 3
 mkdir server/build
 pushd server/build
 cmake ..
