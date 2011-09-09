@@ -8,9 +8,12 @@ steps will be required:
    and must be registered as one of the 10 collaborators
  * in his github account, the user must have a ssh keypair 
    duly registered, and properly setup on the machine
-   where he wishes to run the setup 
- * the user must have already installed git, and cloned 
-   the setup project:
+   where he wishes to run the setup
+ * the user must be a sudoer (/etc/sudoers)
+ * the user must have already installed git
+   (n.b. setup.sh itself shows how to do this on the
+   supported platforms)
+ * the user can now proceed, after cloning the setup project:
 
      git clone git@github.com:mvStore/setup.git
      bash ./setup/linux/setup.sh

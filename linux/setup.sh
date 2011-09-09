@@ -179,7 +179,9 @@ if [ -d "protobuf-for-node" ]; then
 else
   hg clone https://code.google.com/p/protobuf-for-node/
   pushd protobuf-for-node
-  python ../setup/tools/adjust_protobuf_for_node_wscript.py wscript
+  pushd example
+  protoc --cpp_out=. protoservice.proto
+  popd
   NODE_PATH=/usr/local/bin/node PREFIX_NODE=/usr/local PROTOBUF=../protobuf node-waf configure clean build
   popd
 fi
@@ -204,7 +206,16 @@ cmake ..
 make
 popd
 
-# TODO: setup nodejs (mvstore.desc etc.)
+#
+# Setup nodejs/mvstore-client.
+#
+pushd nodejs/mvstore-client
+mkdir node_modules
+pushd node_modules
+ln -s ../../../protobuf-for-node/build/default protobuf-for-node
+popd
+popd
+
 # TODO: ask if user wants to run tests
 # TODO: ask if user wants to start mvserver
 
