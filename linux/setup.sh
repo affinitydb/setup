@@ -64,8 +64,9 @@ if [ $dependencies_doinstall -eq 1 ]; then
   # Note: Already installed components should remain unchanged.
   if ! grep '/usr/' <(whereis apt-get) >/dev/null; then
     # With YUM...
-    # TODO: Make sure this is fedora; match the epel version with fedora version.
-    sudo rpm -Uvh http://download.fedora.redhat.com/pub/epel/5/i386/epel-release-5-4.noarch.rpm
+    if ! grep -i 'fedora' <(cat /etc/*-release) >/dev/null; then
+      sudo rpm -Uvh http://download.fedora.redhat.com/pub/epel/5/i386/epel-release-5-4.noarch.rpm
+    fi
     sudo yum install ${dependencies_pkg_yum[@]} 
   else
     # With aptitude...
