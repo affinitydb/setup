@@ -178,7 +178,7 @@ if [ -d "protobuf-for-node" ]; then
   echo -e "   directory 'protobuf-for-node' already present in \n   $PWD"
   sleep 1
 else
-  hg clone https://code.google.com/p/protobuf-for-node/
+  hg clone http://code.google.com/p/protobuf-for-node/
   pushd protobuf-for-node
   pushd example
   protoc --cpp_out=. protoservice.proto
