@@ -50,7 +50,7 @@ function install_osx_dmg
   pkg=`find ./$1_volume -regex .*\.pkg`
   for iP in ${pkg[@]}; do
     echo "installing package: $iP"
-	sudo installer -pkg $iP -target /
+    sudo installer -pkg $iP -target /
   done
   hdiutil detach $1_volume
 }
@@ -76,15 +76,6 @@ if [ $dependencies_doinstall -eq 1 ]; then
   # Standard install for the basic components.
   # Note: Already installed components should remain unchanged.
   if [[ $operating_system == 'Darwin' ]]; then
-    if ! grep '/usr/' <(which cmake) >/dev/null; then
-      install_osx_dmg cmake http://www.cmake.org/files/v2.8/cmake-2.8.6-Darwin-universal.dmg
-    fi
-    if ! grep '/usr/' <(which git) >/dev/null; then
-      install_osx_dmg git http://git-osx-installer.googlecode.com/files/git-1.7.4.4-i386-leopard.dmg
-    fi
-    if ! grep '/usr/' <(which hg) >/dev/null; then
-      install_osx_dmg hg http://rudix.googlecode.com/files/mercurial-1.7.1-0.dmg
-    fi
     if ! grep '/usr/' <(which curl) >/dev/null; then
       echo "curl is expected to be part of mac os..."
       echo "Please fix curl before continuing."
@@ -94,6 +85,15 @@ if [ $dependencies_doinstall -eq 1 ]; then
       echo "mvstore is contains c++ components and is released as source code that requires gcc..."
       echo "Please install Xcode (http://developer.apple.com/xcode/) before continuing."
       exit 1
+    fi
+    if ! grep '/usr/' <(which cmake) >/dev/null; then
+      install_osx_dmg cmake http://www.cmake.org/files/v2.8/cmake-2.8.6-Darwin-universal.dmg
+    fi
+    if ! grep '/usr/' <(which git) >/dev/null; then
+      install_osx_dmg git http://git-osx-installer.googlecode.com/files/git-1.7.4.4-i386-leopard.dmg
+    fi
+    if ! grep '/usr/' <(which hg) >/dev/null; then
+      install_osx_dmg hg http://rudix.googlecode.com/files/mercurial-1.7.1-0.dmg
     fi
   else
     if ! grep '/usr/' <(which apt-get) >/dev/null; then
@@ -218,7 +218,11 @@ else
   pushd example
   protoc --cpp_out=. protoservice.proto
   popd
-  NODE_PATH=/usr/local/bin/node PREFIX_NODE=/usr/local PROTOBUF=../protobuf node-waf configure clean build
+  if [[ $operating_system == 'Darwin' ]]; then
+    NODE_PATH=$PWD/build/default PREFIX_NODE=/usr/local PROTOBUF=../protobuf node-waf configure clean build
+  else
+    NODE_PATH=/usr/local/bin/node PREFIX_NODE=/usr/local PROTOBUF=../protobuf node-waf configure clean build
+  fi
   popd
 fi
 
