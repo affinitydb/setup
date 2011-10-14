@@ -1,4 +1,5 @@
 #!/bin/bash
+operating_system=`uname -s`
 
 #
 # Greetings.
@@ -23,6 +24,7 @@ echo "   5. fetch protobuf-for-node and build it"
 echo "   6. build mvStore"
 echo "   7. (optional) start the mvStore server"
 echo ""
+echo "OS: $operating_system"
 read -p "Ready to start? [Y/n]"
 if [[ $REPLY =~ ^[Nn]$ ]]; then
   echo "   cancelling setup upon user's request"
@@ -41,14 +43,25 @@ sleep 1
 #
 # Check dependencies and install missing elements.
 #
+function install_osx_dmg
+{
+  curl -o $1.dmg $2
+  hdiutil attach ./$1.dmg -mountpoint ./$1_volume
+  pkg=`find ./$1_volume -regex .*\.pkg`
+  for iP in ${pkg[@]}; do
+    echo "installing package: $iP"
+	sudo installer -pkg $iP -target /
+  done
+  hdiutil detach $1_volume
+}
 dependencies_exe=(cmake curl git hg node gcc)
 dependencies_pkg_apt=(cmake curl git-core mercurial libssl-dev)
-dependencies_pkg_yum=(cmake curl git-core mercurial openssl-devel gcc-c++) 
+dependencies_pkg_yum=(cmake curl git-core mercurial openssl-devel gcc-c++)
 echo -e "\n2. Checking dependencies: ${dependencies_exe[@]}\n"
 sleep 1
 dependencies_doinstall=0
 for iD in ${dependencies_exe[@]}; do
-  if ! grep '/usr/' <(whereis $iD) >/dev/null; then
+  if ! grep '/usr/' <(which $iD) >/dev/null; then
     echo "   * $iD is not present - will install"
     dependencies_doinstall=1
   fi
@@ -62,16 +75,38 @@ if [ $dependencies_doinstall -eq 1 ]; then
   
   # Standard install for the basic components.
   # Note: Already installed components should remain unchanged.
-  if ! grep '/usr/' <(whereis apt-get) >/dev/null; then
-    # With YUM...
-    if ! grep -i 'fedora' <(cat /etc/*-release) >/dev/null; then
-      sudo rpm -Uvh http://download.fedora.redhat.com/pub/epel/5/i386/epel-release-5-4.noarch.rpm
+  if [[ $operating_system == 'Darwin' ]]; then
+    if ! grep '/usr/' <(which cmake) >/dev/null; then
+      install_osx_dmg cmake http://www.cmake.org/files/v2.8/cmake-2.8.6-Darwin-universal.dmg
     fi
-    sudo yum install ${dependencies_pkg_yum[@]} 
+    if ! grep '/usr/' <(which git) >/dev/null; then
+      install_osx_dmg git http://git-osx-installer.googlecode.com/files/git-1.7.4.4-i386-leopard.dmg
+    fi
+    if ! grep '/usr/' <(which hg) >/dev/null; then
+      install_osx_dmg hg http://rudix.googlecode.com/files/mercurial-1.7.1-0.dmg
+    fi
+    if ! grep '/usr/' <(which curl) >/dev/null; then
+      echo "curl is expected to be part of mac os..."
+      echo "Please fix curl before continuing."
+      exit 1
+    fi
+    if ! grep '/usr/' <(which gcc) >/dev/null; then
+      echo "mvstore is contains c++ components and is released as source code that requires gcc..."
+      echo "Please install Xcode (http://developer.apple.com/xcode/) before continuing."
+      exit 1
+    fi
   else
-    # With aptitude...
-    sudo apt-get update
-    sudo apt-get install ${dependencies_pkg_apt[@]}
+    if ! grep '/usr/' <(which apt-get) >/dev/null; then
+      # With YUM...
+      if ! grep -i 'fedora' <(cat /etc/*-release) >/dev/null; then
+        sudo rpm -Uvh http://download.fedora.redhat.com/pub/epel/5/i386/epel-release-5-4.noarch.rpm
+      fi
+      sudo yum install ${dependencies_pkg_yum[@]} 
+    else
+      # With aptitude...
+      sudo apt-get update
+      sudo apt-get install ${dependencies_pkg_apt[@]}
+    fi
   fi
 
   # Control the node.js version we install.
@@ -120,7 +155,7 @@ else
   echo -e "   - ssh-agent is already running"
 fi
 pushd ~/.ssh
-ssh_keys=`find -regex .*id_.* | grep -v .pub`
+ssh_keys=`find . -regex .*id_.* | grep -v .pub`
 for iK in ${ssh_keys[@]}; do
   ssh_pub=`head -c 50 $iK.pub`
   if ! grep "$ssh_pub" <(ssh-add -L) >/dev/null; then 
