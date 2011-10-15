@@ -61,7 +61,7 @@ echo -e "\n2. Checking dependencies: ${dependencies_exe[@]}\n"
 sleep 1
 dependencies_doinstall=0
 for iD in ${dependencies_exe[@]}; do
-  if ! grep '/usr/' <(which $iD) >/dev/null; then
+  if ! grep '/usr/' <(which $iD 2>/dev/null) >/dev/null; then
     echo "   * $iD is not present - will install"
     dependencies_doinstall=1
   fi
@@ -76,27 +76,27 @@ if [ $dependencies_doinstall -eq 1 ]; then
   # Standard install for the basic components.
   # Note: Already installed components should remain unchanged.
   if [[ $operating_system == 'Darwin' ]]; then
-    if ! grep '/usr/' <(which curl) >/dev/null; then
+    if ! grep '/usr/' <(which curl 2>/dev/null) >/dev/null; then
       echo "curl is expected to be part of mac os..."
       echo "Please fix curl before continuing."
       exit 1
     fi
-    if ! grep '/usr/' <(which gcc) >/dev/null; then
+    if ! grep '/usr/' <(which gcc 2>/dev/null) >/dev/null; then
       echo "mvstore is contains c++ components and is released as source code that requires gcc..."
       echo "Please install Xcode (http://developer.apple.com/xcode/) before continuing."
       exit 1
     fi
-    if ! grep '/usr/' <(which cmake) >/dev/null; then
+    if ! grep '/usr/' <(which cmake 2>/dev/null) >/dev/null; then
       install_osx_dmg cmake http://www.cmake.org/files/v2.8/cmake-2.8.6-Darwin-universal.dmg
     fi
-    if ! grep '/usr/' <(which git) >/dev/null; then
+    if ! grep '/usr/' <(which git 2>/dev/null) >/dev/null; then
       install_osx_dmg git http://git-osx-installer.googlecode.com/files/git-1.7.4.4-i386-leopard.dmg
     fi
-    if ! grep '/usr/' <(which hg) >/dev/null; then
+    if ! grep '/usr/' <(which hg 2>/dev/null) >/dev/null; then
       install_osx_dmg hg http://rudix.googlecode.com/files/mercurial-1.7.1-0.dmg
     fi
   else
-    if ! grep '/usr/' <(which apt-get) >/dev/null; then
+    if ! grep '/usr/' <(which apt-get 2>/dev/null) >/dev/null; then
       # With YUM...
       if ! grep -i 'fedora' <(cat /etc/*-release) >/dev/null; then
         sudo rpm -Uvh http://download.fedora.redhat.com/pub/epel/5/i386/epel-release-5-4.noarch.rpm
@@ -118,7 +118,7 @@ if [ $dependencies_doinstall -eq 1 ]; then
     pushd node-v$preferred_nodejs_version
     ./configure
     make
-    sudo make install
+    bogus=`sudo make install`
     popd
   fi
 else
@@ -128,7 +128,7 @@ fi
 #
 # Configure git.
 #
-if ! grep 'user.email' <(git config --global -l) >/dev/null; then
+if ! grep 'user.email' <(git config --global -l 2>/dev/null) >/dev/null; then
   echo ""
   read -p "   configuring git user.email: "
   if [ -z "$REPLY" ]; then
@@ -200,7 +200,7 @@ else
   ./configure
   make
   echo -e "   installing protobuf..."
-  sudo make install
+  bogus=`sudo make install`
   popd
 fi
 
