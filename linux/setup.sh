@@ -172,7 +172,7 @@ popd
 #
 # Clone all the github projects.
 #
-mvstore_projects=(kernel server nodejs python doc tests_kernel setup)
+mvstore_projects=(kernel server nodejs python ruby doc tests_kernel setup)
 echo -e "\n3. Cloning the mvStore projects:\n   ${mvstore_projects[@]}\n"
 sleep 3
 for iP in ${mvstore_projects[@]}; do
