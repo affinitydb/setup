@@ -4,25 +4,25 @@ operating_system=`uname -s`
 #
 # Greetings.
 #
-echo "Welcome to mvStore!"
+echo "Welcome to Affinity!"
 echo ""
 echo "Prior to running this setup, please make sure to:"
 echo ""
 echo "   - have a personal github account"
-echo "   - be registered as contributor for mvStore (email maxw@vmware.com)"
+echo "   - be registered as contributor for affinitydb (email maxw@vmware.com)"
 echo "   - have a ssh keypair properly configured"
 echo "   - be a sudoer"
 echo ""  
 echo "This setup script will perform the following steps:"
 echo ""
-echo "   1. create a mvStore directory that will contain the installed components"
+echo "   1. create an Affinity directory that will contain the installed components"
 echo "   2. check external dependencies such as cmake, curl, node.js etc."
 echo "      (install them if not present)"
-echo "   3. clone the mvStore projects from github"
+echo "   3. clone the Affinity projects from github"
 echo "   4. fetch protobuf-2.3.0 from google and build it"
 echo "   5. fetch protobuf-for-node and build it"
-echo "   6. build mvStore"
-echo "   7. (optional) start the mvStore server"
+echo "   6. build Affinity"
+echo "   7. (optional) start the Affinity server"
 echo ""
 echo "OS: $operating_system"
 read -p "Ready to start? [Y/n]"
@@ -32,11 +32,11 @@ if [[ $REPLY =~ ^[Nn]$ ]]; then
 fi
 
 #
-# Create a mvStore directory to contain everything.
+# Create a Affinity directory to contain everything.
 #
-echo -e "\n1. Creating mvStore...\n"
-mkdir -p mvStore
-cd mvStore
+echo -e "\n1. Creating Affinity...\n"
+mkdir -p Affinity
+cd Affinity
 echo "   $PWD"
 sleep 1
 
@@ -82,7 +82,7 @@ if [ $dependencies_doinstall -eq 1 ]; then
       exit 1
     fi
     if ! grep '/usr/' <(which gcc 2>/dev/null) >/dev/null; then
-      echo "mvstore is contains c++ components and is released as source code that requires gcc..."
+      echo "Affinity contains c++ components and is released as source code that requires gcc..."
       echo "Please install Xcode (http://developer.apple.com/xcode/) before continuing."
       exit 1
     fi
@@ -172,14 +172,14 @@ popd
 #
 # Clone all the github projects.
 #
-mvstore_projects=(kernel server nodejs python ruby doc tests_kernel setup)
-echo -e "\n3. Cloning the mvStore projects:\n   ${mvstore_projects[@]}\n"
+affinity_projects=(kernel server nodejs python ruby doc tests_kernel setup)
+echo -e "\n3. Cloning the Affinity projects:\n   ${affinity_projects[@]}\n"
 sleep 3
-for iP in ${mvstore_projects[@]}; do
+for iP in ${affinity_projects[@]}; do
   if [ -d "$iP" ]; then
     echo "   project $iP already cloned"
   else
-    git clone git@github.com:mvStore/$iP.git
+    git clone git@github.com:affinitydb/$iP.git
   fi
 done
 
@@ -227,9 +227,9 @@ else
 fi
 
 #
-# Build mvStore kernel.
+# Build Affinity kernel.
 #
-echo -e "\n6. Building mvStore...\n"
+echo -e "\n6. Building Affinity...\n"
 sleep 3 
 mkdir kernel/build
 pushd kernel/build 
@@ -238,7 +238,7 @@ make
 popd
 
 #
-# Build mvStore server.
+# Build Affinity server.
 #
 mkdir server/build
 pushd server/build
@@ -247,9 +247,9 @@ make
 popd
 
 #
-# Setup nodejs/mvstore-client.
+# Setup nodejs/affinity-client.
 #
-pushd nodejs/mvstore-client
+pushd nodejs/affinity-client
 mkdir node_modules
 pushd node_modules
 ln -s ../../../protobuf-for-node/build/default protobuf-for-node
@@ -257,5 +257,4 @@ popd
 popd
 
 # TODO: ask if user wants to run tests
-# TODO: ask if user wants to start mvserver
-
+# TODO: ask if user wants to start the Affinity server
