@@ -1,4 +1,4 @@
-mvStore setup
+Affinity setup
 
 This directory will contain the various setup options for each
 platform.  Until the project becomes open, a few preliminary
@@ -15,7 +15,7 @@ steps will be required:
    supported platforms)
  * the user can now proceed, after cloning the setup project:
 
-     git clone git@github.com:mvStore/setup.git
+     git clone git@github.com:affinitydb/setup.git
      bash ./setup/linux/setup.sh
 
 Most of these manual steps will become unnecessary when we
