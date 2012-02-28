@@ -2,7 +2,7 @@ Affinity setup
 
 This directory contains the setup program for each platform.
 Before installing, please visit http://affinitydb.org, where
-you find all the documentation as well as an online demo.
+you will find the documentation as well as an online demo.
 
 Currently, setup fetches and builds everything from the source.
 A few preliminary steps are required:
