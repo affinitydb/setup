@@ -8,8 +8,8 @@ platform.  A few preliminary steps are required:
 
 Then do:
 
-  curl -s -k -B https://raw.github.com/affinitydb/setup/master/linux/setup.sh > affinity_setup.sh
-  bash affinity_setup.sh
+      curl -s -k -B https://raw.github.com/affinitydb/setup/master/linux/setup.sh > affinity_setup.sh
+      bash affinity_setup.sh
 
 This procedure should work on linux and OSX.
 A few confirmations will be requested during installation.
