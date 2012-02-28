@@ -1,25 +1,16 @@
 Affinity setup
 
-This directory will contain the various setup options for each
-platform.  Until the project becomes open, a few preliminary
-steps will be required:
+This directory contains the various code setup options for each
+platform.  A few preliminary steps are required:
 
- * the user must have a personal (free) github account
-   and must be registered as one of the 10 collaborators
- * in his github account, the user must have a ssh keypair 
-   duly registered, and properly setup on the machine
-   where he wishes to run the setup
+ * the user must have a personal github account
  * the user must be a sudoer (/etc/sudoers)
- * the user must have already installed git
-   (n.b. setup.sh itself shows how to do this on the
-   supported platforms)
- * the user can now proceed, after cloning the setup project:
 
-     git clone git@github.com:affinitydb/setup.git
-     bash ./setup/linux/setup.sh
+Then do:
 
-Most of these manual steps will become unnecessary when we
-open-source: the setup script will be obtained with curl
+  git clone git@github.com:affinitydb/setup.git
+  bash ./setup/linux/setup.sh
+
+Soon the setup script will be obtained with curl
 via https://raw.github.com (no credential required), 
 and it will make sure git is installed.
-

@@ -1,4 +1,17 @@
 #!/bin/bash
+# Copyright (c) 2004-2012 VMware, Inc. All Rights Reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
 operating_system=`uname -s`
 
 #
@@ -9,20 +22,17 @@ echo ""
 echo "Prior to running this setup, please make sure to:"
 echo ""
 echo "   - have a personal github account"
-echo "   - be registered as contributor for affinitydb (email maxw@vmware.com)"
-echo "   - have a ssh keypair properly configured"
 echo "   - be a sudoer"
 echo ""  
 echo "This setup script will perform the following steps:"
 echo ""
 echo "   1. create an Affinity directory that will contain the installed components"
-echo "   2. check external dependencies such as cmake, curl, node.js etc."
-echo "      (install them if not present)"
+echo "   2. check external dependencies and components such as cmake, curl,"
+echo "      node.js etc. (install them if not present)"
 echo "   3. clone the Affinity projects from github"
 echo "   4. fetch protobuf-2.3.0 from google and build it"
 echo "   5. fetch protobuf-for-node and build it"
 echo "   6. build Affinity"
-echo "   7. (optional) start the Affinity server"
 echo ""
 echo "OS: $operating_system"
 read -p "Ready to start? [Y/n]"
@@ -146,6 +156,7 @@ fi
 
 #
 # Setup ssh-agent, to avoid multiple logins when fetching all the git projects.
+# Note: This will no longer be required when projects become public.
 #
 echo -e "   configuring ssh-agent to facilitate git logins"
 if ! grep '/usr/bin' <(ps aux | grep 'ssh-agent') >/dev/null; then
@@ -172,7 +183,7 @@ popd
 #
 # Clone all the github projects.
 #
-affinity_projects=(kernel server nodejs python ruby doc tests_kernel setup)
+affinity_projects=(kernel server nodejs python ruby java doc tests_kernel setup)
 echo -e "\n3. Cloning the Affinity projects:\n   ${affinity_projects[@]}\n"
 sleep 3
 for iP in ${affinity_projects[@]}; do
@@ -256,5 +267,11 @@ ln -s ../../../protobuf-for-node/build/default protobuf-for-node
 popd
 popd
 
-# TODO: ask if user wants to run tests
-# TODO: ask if user wants to start the Affinity server
+echo ""
+echo "Affinity is installed!"
+echo "To run the server:"
+echo ""
+echo "  cd server"
+echo "  bin/affinityd -d src/www"
+echo ""
+echo "... then visit http://localhost:4560 in a browser."
