@@ -1,7 +1,11 @@
 Affinity setup
 
-This directory contains the various code setup options for each
-platform.  A few preliminary steps are required:
+This directory contains the setup program for each platform.
+Before installing, please visit http://affinitydb.org, where
+you find all the documentation as well as an online demo.
+
+Currently, setup fetches and builds everything from the source.
+A few preliminary steps are required:
 
  * the user must have a personal github account properly configured
  * the user must be a sudoer (/etc/sudoers)
