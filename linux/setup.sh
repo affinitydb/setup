@@ -71,10 +71,14 @@ echo -e "\n2. Checking dependencies: ${dependencies_exe[@]}\n"
 sleep 1
 dependencies_doinstall=0
 for iD in ${dependencies_exe[@]}; do
-  if ! grep '/usr/' <(which $iD 2>/dev/null) >/dev/null; then
-    echo "   * $iD is not present - will install"
-    dependencies_doinstall=1
-  fi
+  case $(which $iD 2>/dev/null) in
+    /opt/*) true ;;
+    /usr/*) true ;;
+    *)
+      echo "   * $iD is not present - will install"
+      dependencies_doinstall=1
+      ;;
+  esac
 done
 if [ $dependencies_doinstall -eq 1 ]; then
   read -p "   -> Ready to install missing dependencies? [Y/n]"
