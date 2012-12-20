@@ -30,7 +30,7 @@ echo "   1. create an Affinity directory that will contain the installed compone
 echo "   2. check external dependencies and components such as cmake, curl,"
 echo "      node.js etc. (install them if not present)"
 echo "   3. clone the Affinity projects from github"
-echo "   4. fetch protobuf-2.3.0 from google and build it"
+echo "   4. fetch protobuf from google and build it"
 echo "   5. fetch protobuf-for-node and build it"
 echo "   6. build Affinity"
 echo ""
@@ -64,9 +64,9 @@ function install_osx_dmg
   done
   hdiutil detach $1_volume
 }
-dependencies_exe=(cmake curl git hg node gcc)
-dependencies_pkg_apt=(cmake curl git-core mercurial libssl-dev)
-dependencies_pkg_yum=(cmake curl git-core mercurial openssl-devel gcc-c++)
+dependencies_exe=(cmake curl git node gcc)
+dependencies_pkg_apt=(cmake curl git-core libssl-dev)
+dependencies_pkg_yum=(cmake curl git-core openssl-devel gcc-c++)
 echo -e "\n2. Checking dependencies: ${dependencies_exe[@]}\n"
 sleep 1
 dependencies_doinstall=0
@@ -101,13 +101,10 @@ if [ $dependencies_doinstall -eq 1 ]; then
       exit 1
     fi
     if ! grep '/usr/' <(which cmake 2>/dev/null) >/dev/null; then
-      install_osx_dmg cmake http://www.cmake.org/files/v2.8/cmake-2.8.6-Darwin-universal.dmg
+      install_osx_dmg cmake http://www.cmake.org/files/v2.8/cmake-2.8.10.1-Darwin-universal.dmg
     fi
     if ! grep '/usr/' <(which git 2>/dev/null) >/dev/null; then
       install_osx_dmg git http://git-osx-installer.googlecode.com/files/git-1.7.4.4-i386-leopard.dmg
-    fi
-    if ! grep '/usr/' <(which hg 2>/dev/null) >/dev/null; then
-      install_osx_dmg hg http://rudix.googlecode.com/files/mercurial-1.7.1-0.dmg
     fi
   else
     if ! grep '/usr/' <(which apt-get 2>/dev/null) >/dev/null; then
@@ -124,9 +121,11 @@ if [ $dependencies_doinstall -eq 1 ]; then
   fi
 
   # Control the node.js version we install.
-  preferred_nodejs_version=0.4.7
+  # Note: the original version of protobuf_for_node requires node-waf, and an older version of v8.
+  # Note: chrisdew's version, installed by npm (https://github.com/chrisdew/protobuf), works at least until 0.8.5.
+  preferred_nodejs_version=0.8.5
   if [[ ! `node -v` == 'v'$preferred_nodejs_version ]]; then
-    curl -o node-v$preferred_nodejs_version.tar.gz http://nodejs.org/dist/node-v$preferred_nodejs_version.tar.gz
+    curl -o node-v$preferred_nodejs_version.tar.gz http://nodejs.org/dist/v$preferred_nodejs_version/node-v$preferred_nodejs_version.tar.gz
     tar -xvpzf node-v$preferred_nodejs_version.tar.gz
     rm node-v$preferred_nodejs_version.tar.gz
     pushd node-v$preferred_nodejs_version
@@ -201,16 +200,17 @@ done
 #
 # Fetch protobuf from google, build it and set it up.
 #
-echo -e "\n4. Fetching protobuf-2.3.0\n"
+echo -e "\n4. Fetching protobuf\n"
 sleep 3 
 if [ -d "protobuf" ]; then
   echo -e "   directory 'protobuf' already present in\n   $PWD"
   sleep 1
 else
-  curl -o protobuf-2.3.0.tar.gz http://protobuf.googlecode.com/files/protobuf-2.3.0.tar.gz
-  tar -xvpzf protobuf-2.3.0.tar.gz
-  rm protobuf-2.3.0.tar.gz
-  mv protobuf-2.3.0 protobuf
+  preferred_protobuf_version=2.4.1
+  curl -o protobuf-$preferred_protobuf_version.tar.gz http://protobuf.googlecode.com/files/protobuf-$preferred_protobuf_version.tar.gz
+  tar -xvpzf protobuf-$preferred_protobuf_version.tar.gz
+  rm protobuf-$preferred_protobuf_version.tar.gz
+  mv protobuf-$preferred_protobuf_version protobuf
   pushd protobuf
   ./configure
   make
@@ -220,44 +220,24 @@ else
 fi
 
 #
-# Fetch protobuf-for-node (using mercurial), build it and set it up.
-#
-echo -e "\n5. Fetching protobuf-for-node\n"
-sleep 3 
-if [ -d "protobuf-for-node" ]; then
-  echo -e "   directory 'protobuf-for-node' already present in \n   $PWD"
-  sleep 1
-else
-  hg clone http://code.google.com/p/protobuf-for-node/
-  pushd protobuf-for-node
-  pushd example
-  protoc --cpp_out=. protoservice.proto
-  popd
-  if [[ $operating_system == 'Darwin' ]]; then
-    NODE_PATH=$PWD/build/default PREFIX_NODE=/usr/local PROTOBUF=../protobuf node-waf configure clean build
-  else
-    NODE_PATH=/usr/local/bin/node PREFIX_NODE=/usr/local PROTOBUF=../protobuf node-waf configure clean build
-  fi
-  popd
-fi
-
-#
 # Build Affinity kernel.
+# Note: We set CC and CXX for cmake to use GNU (as opposed to clang) on the Mac.
 #
 echo -e "\n6. Building Affinity...\n"
 sleep 3 
 mkdir kernel/build
 pushd kernel/build 
-cmake ..
+CC=/usr/bin/gcc CXX=/usr/bin/g++ cmake ..
 make
 popd
 
 #
 # Build Affinity server.
+# Note: We set CC and CXX for cmake to use GNU (as opposed to clang) on the Mac.
 #
 mkdir server/build
 pushd server/build
-cmake ..
+CC=/usr/bin/gcc CXX=/usr/bin/g++ cmake ..
 make
 popd
 
@@ -266,9 +246,7 @@ popd
 #
 pushd nodejs/affinity-client
 mkdir node_modules
-pushd node_modules
-ln -s ../../../protobuf-for-node/build/default protobuf-for-node
-popd
+npm install protobuf
 popd
 
 echo ""
