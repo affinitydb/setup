@@ -186,7 +186,7 @@ popd
 #
 # Clone all the github projects.
 #
-affinity_projects=(kernel server nodejs python ruby java doc tests_kernel setup)
+affinity_projects=(kernel server services nodejs python java doc tests_kernel setup)
 echo -e "\n3. Cloning the Affinity projects:\n   ${affinity_projects[@]}\n"
 sleep 3
 for iP in ${affinity_projects[@]}; do
@@ -206,7 +206,7 @@ if [ -d "protobuf" ]; then
   echo -e "   directory 'protobuf' already present in\n   $PWD"
   sleep 1
 else
-  preferred_protobuf_version=2.4.1
+  preferred_protobuf_version=2.5.0
   curl -o protobuf-$preferred_protobuf_version.tar.gz http://protobuf.googlecode.com/files/protobuf-$preferred_protobuf_version.tar.gz
   tar -xvpzf protobuf-$preferred_protobuf_version.tar.gz
   rm protobuf-$preferred_protobuf_version.tar.gz
@@ -216,18 +216,23 @@ else
   make
   echo -e "   installing protobuf..."
   bogus=`sudo make install`
+  pushd python
+  python setup.py build
+  bogus2=`sudo python setup.py install`
   popd
+	popd
 fi
 
 #
 # Build Affinity kernel.
-# Note: We set CC and CXX for cmake to use GNU (as opposed to clang) on the Mac.
+# Note: We used to set CC and CXX for cmake to use GNU (as opposed to clang) on the Mac; no longer.
+#       CC=/usr/bin/gcc CXX=/usr/bin/g++ cmake ..
 #
 echo -e "\n6. Building Affinity...\n"
 sleep 3 
 mkdir kernel/build
 pushd kernel/build 
-CC=/usr/bin/gcc CXX=/usr/bin/g++ cmake ..
+cmake ..
 make
 popd
 
@@ -237,7 +242,7 @@ popd
 #
 mkdir server/build
 pushd server/build
-CC=/usr/bin/gcc CXX=/usr/bin/g++ cmake ..
+cmake ..
 make
 popd
 
